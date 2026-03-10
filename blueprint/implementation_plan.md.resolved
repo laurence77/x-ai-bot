@@ -1,0 +1,73 @@
+# CreatorSignal Implementation Plan
+
+## Overview
+CreatorSignal is an AI-native content intelligence platform for X. This plan outlines the transition from a concept to a scalable, enterprise-hardened SaaS.
+
+## Proposed Architecture
+
+### 1. Technology Stack
+*   **Frontend**: Next.js (App Router), Tailwind CSS, Lucide Icons.
+*   **Backend**: FastAPI (Python) for high-performance async processing.
+*   **Database**: PostgreSQL with Row-Level Security (RLS) for multi-tenancy.
+*   **Cache & Task Queue**: Redis + Celery for background analysis and monitoring.
+*   **AI Engine**: 
+    *   **Primary**: OpenAI (GPT-4o) / Claude 3.5 Sonnet.
+    *   **Specialized**: Gemini 1.5 Flash (for fast vision/audio analysis).
+    *   **Vector DB**: Pinecone (for Voice DNA lexical profiles).
+*   **Ingestion**: X API v2 + Apify/Playwright for fallback scraping.
+*   **Infra**: Docker, AWS ECS (API/Workers), RDS (PostgreSQL), ElastiCache (Redis).
+
+### 2. Multi-Tenant Data Schema
+```sql
+-- Scoped to Organization
+CREATE TABLE organizations (
+  id UUID PRIMARY KEY,
+  name TEXT NOT NULL,
+  plan TEXT CHECK (plan IN ('pro','agency','enterprise')),
+  ai_training_opt_out BOOLEAN DEFAULT TRUE
+);
+
+-- Linked to Workspaces
+CREATE TABLE workspaces (
+  id UUID PRIMARY KEY,
+  org_id UUID REFERENCES organizations(id),
+  name TEXT NOT NULL,
+  white_label_domain TEXT
+);
+
+-- Every AI output is auditable
+CREATE TABLE ai_outputs (
+  id UUID PRIMARY KEY,
+  workspace_id UUID,
+  prompt_version_id UUID,
+  input_hash TEXT,
+  output JSONB,
+  generated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+## 14-Day MVP Roadmap
+
+### Week 1: Foundation & Account Sync
+*   **Day 1-2**: Project scaffolding (FastAPI + Next.js), Auth0 integration, and Multi-tenant DB setup.
+*   **Day 3**: X OAuth 2.0 flow and initial data sync (last 50 posts).
+*   **Day 4-5**: Core AI Pipeline. "Draft Analyzer" endpoint with Hook Scoring and Improvement suggestions.
+
+### Week 2: Intelligence & Enterprise Hardening
+*   **Day 6-7**: Competitor Radar. Monitoring niche accounts and detecting viral spikes.
+*   **Day 8-9**: Viral Probability Score training and Bookmark Velocity monitoring.
+*   **Day 10-11**: Audit Logging, SSO/SAML support (Enterprise Only), and Admin Dashboard.
+*   **Day 12-13**: White-labelling (Custom domains/branding) and PDF Executive Reports.
+*   **Day 14**: Hardening, AWS Deployment, and Beta Launch.
+
+## Verification Plan
+
+### Automated Tests
+*   `pytest`: Backend API endpoints testing (Auth, RBAC, Multi-tenancy isolation).
+*   `Playwright`: E2E testing of the user journey (Sign up -> Connect X -> Analyze Draft).
+*   `Mock AI Response Tests`: Ensuring the parser correctly handles standard and edge-case JSON outputs from LLMs.
+
+### Manual Verification
+1.  **X Account Connection**: Verify OAuth flow correctly pulls real-time metrics for a test account.
+2.  **RBAC Check**: Confirm an "Editor" cannot view "Competitor Radar" data if restricted.
+3.  **Draft Feedback**: Manually verify that "Viral Hook Suggestions" follow the "Strategist Logic" (Curiosity gap, etc.).
