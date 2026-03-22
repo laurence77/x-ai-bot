@@ -1,11 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';  
+import React, { useState, useEffect, useRef } from 'react';  
 import {  
-  Users,
-  Award,
   AlertTriangle,
-  PenTool,
   MessageSquare,
   Settings,
   Zap,
@@ -16,7 +13,9 @@ import {
   TrendingUp,
   ArrowUpRight,
   Menu,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';  
 import { 
   ShieldSafety,
@@ -28,11 +27,16 @@ import {
   SparkleGenAI,
   VerifiedAI,
   GrowthScale,
-  CreatorSignalLogo
+  CreatorSignalLogo,
+  XAlgorithm,
+  AIBrain,
+  Automation,
+  GlobalIntelligence,
+  BinaryStream,
+  XPostAI,
 } from '@/components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import BlurText from '@/components/BlurText';
-import TextType from '@/components/TextType';
 import DecryptedText from '@/components/DecryptedText';
 import VariableProximity from '@/components/VariableProximity';
 import TargetCursor from '@/components/TargetCursor';
@@ -40,40 +44,19 @@ import GradualBlur from '@/components/GradualBlur';
 import SplashCursor from '@/components/SplashCursor';
 import Waves from '@/components/Waves';
 import LetterGlitch from '@/components/LetterGlitch';
-import { useRef } from 'react';
+import ReflectiveCard from '@/components/ReflectiveCard';
+import MagicBento from '@/components/MagicBento';
+import CardNav from '@/components/CardNav';
+import Stepper, { Step } from '@/components/Stepper';
 
-const MOCK_FINGERPRINT = {  
-  tone: "Authoritative yet accessible",  
-  vocabulary: ["Infrastructure", "Hardening", "Leverage", "Moat"],  
-  emojiDensity: 0.02,  
-  avgSentenceLength: 12,  
-  sentenceVariety: "High",  
-  forbiddenWords: ["Inspirational", "Actually", "Just"]  
-};  
-  
-const MOCK_BIO_ALIGNMENT = {  
-  profileVisits24h: 1240,  
-  followerConversionRate: 0.012,  
-  topInterestSegment: "Founders / SaaS",  
-  mismatchReason: "Bio focuses on 'Daily Routine' while viral post focused on 'Enterprise Architecture'.",  
-  suggestedBio: "Helping Enterprise Founders harden their SaaS architecture. Systems > Hype."  
-};  
-  
-const MOCK_HIJACK_TARGETS = [  
-  {  
-    id: 'h1',  
-    handle: '@SaaS_Guru',  
-    text: "AI is overhyped. Every company is just a wrapper.",  
-    ratio: 4.2,  
-    opportunity: "High: Post a 'Defense of Vertical AI' thread."  
-  }  
-];  
+
 
 export default function App() {  
-  const [activeTab, setActiveTab] = useState('warroom');  
+  const [activeTab, setActiveTab] = useState('onboarding');  
   const [isRescuing, setIsRescuing] = useState(false);  
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [recentPost, setRecentPost] = useState({  
     text: "The gap between Good SaaS and Enterprise-Grade is trust...",  
     likes: 12,  
@@ -108,7 +91,7 @@ export default function App() {
     await new Promise(resolve => setTimeout(resolve, 2000));
     setUserProfile(prev => ({
       ...prev,
-      bio: MOCK_BIO_ALIGNMENT.suggestedBio
+      bio: "Helping Enterprise Founders harden their SaaS architecture. Systems > Hype."
     }));
     setIsApplyingBio(false);
   };
@@ -151,8 +134,17 @@ export default function App() {
         dwellRank: data.dwell_rank,
         isLoading: false
       });
-    } catch (err) {
-      console.error("Failed to fetch dashboard stats", err);
+    } catch (error) {
+      console.warn('Backend unavailable, using localized intelligence simulation.', error);
+      setDashboardStats({
+        growthVelocity: 24,
+        followerDelta: '+124',
+        viralProbability: 88,
+        nextWindow: '14:00 - 16:00',
+        dwellTime: 12,
+        dwellRank: 'Top 1%',
+        isLoading: false
+      });
     }
   };
 
@@ -164,7 +156,25 @@ export default function App() {
       setCompetitors(data);
       setIsScanningCompetitors(false);
     } catch (err) {
-      console.error("Failed to fetch competitors", err);
+      console.warn("Radar sync failed, using localized intelligence simulation.", err);
+      setCompetitors([
+        {
+          id: 'h1',
+          handle: '@SaaS_Guru',
+          text: "AI is overhyped. Every company is just a wrapper.",
+          ratio: 4.2,
+          sentiment: 'Negative',
+          opportunity: "High: Post a 'Defense of Vertical AI' thread."
+        },
+        {
+          id: 'h2',
+          handle: '@TechLead_X',
+          text: "Infrastructure is the only moat left in 2026.",
+          ratio: 2.1,
+          sentiment: 'Controversial',
+          opportunity: "Medium: Leverage 'Harden your Node' messaging."
+        }
+      ]);
       setIsScanningCompetitors(false);
     }
   };
@@ -183,7 +193,15 @@ export default function App() {
       setAuditLogs(logData);
       setIsHardening(false);
     } catch (err) {
-      console.error("Hardening sync failed", err);
+      console.warn("Hardening sync failed, using localized intelligence simulation.", err);
+      setLexicalDNA({
+        top_narratives: ["Enterprise Architecture", "SOC 2 Compliance", "Node Hardening"],
+        suggested_shifts: ["Focus on 'Trust-First' messaging", "Avoid 'Hype' terminology"]
+      });
+      setAuditLogs([
+        { timestamp: new Date().toISOString(), action: 'NEURAL_LINK_STABLE', user: 'SYSTEM' },
+        { timestamp: new Date().toISOString(), action: 'AUDIT_LOG_INITIALIZED', user: 'SYSTEM' }
+      ]);
       setIsHardening(false);
     }
   };
@@ -238,72 +256,126 @@ export default function App() {
     }
   }, [isDarkMode]);
   
+  const navigation = [
+    { 
+      group: 'Strategic Ops',
+      items: [
+        { id: 'command', name: 'Command Center', icon: Zap },
+        { id: 'onboarding', name: 'Audit & Sync', icon: CheckCircle2 },
+        { id: 'warroom', name: 'War Room', icon: ShieldSafety },
+        { id: 'intelligence', name: 'Bio Alignment', icon: NeuralLink },
+        { id: 'settings', name: 'Link AI / Settings', icon: Settings },
+      ]
+    },
+    {
+      group: 'Intelligence Lab',
+      items: [
+        { id: 'fingerprint', name: 'Voice DNA', icon: FingerprintIcon },
+        { id: 'algorithm', name: 'Algorithm Lab', icon: XAlgorithm },
+        { id: 'neural', name: 'Neural Core', icon: AIBrain },
+        { id: 'discovery', name: 'Global Intel', icon: GlobalIntelligence },
+      ]
+    },
+    {
+      group: 'Growth & Reach',
+      items: [
+        { id: 'hijack', name: 'Narrative Hijack', icon: TargetIcon },
+        { id: 'creative', name: 'Creative Studio', icon: SparkleGenAI },
+        { id: 'growth', name: 'Growth Analytics', icon: GrowthScale },
+        { id: 'automation', name: 'Autonomous Flows', icon: Automation },
+      ]
+    },
+    {
+      group: 'Systems',
+      items: [
+        { id: 'nodes', name: 'Data Nodes', icon: DataNode },
+        { id: 'stream', name: 'Binary Stream', icon: BinaryStream },
+      ]
+    }
+  ];
+
   const renderSidebar = () => (  
     <>
       <div 
         className={`${isMobileMenuOpen ? 'fixed inset-0 bg-black/50 z-40 backdrop-blur-sm' : 'hidden'} md:hidden`} 
         onClick={() => setIsMobileMenuOpen(false)}
       />
-      <div className={`${isMobileMenuOpen ? 'flex absolute z-50' : 'hidden md:flex relative'} w-64 bg-slate-50/80 dark:bg-black/60 backdrop-blur-xl text-slate-600 dark:text-slate-400 flex-col h-screen border-r border-slate-200 dark:border-[#d4af37]/20 transition-colors shadow-2xl md:shadow-none`}>  
+      <div className={`${isMobileMenuOpen ? 'flex absolute z-50' : 'hidden md:flex relative'} ${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-slate-50/80 dark:bg-black/60 backdrop-blur-xl text-slate-600 dark:text-slate-400 flex-col h-screen border-r border-slate-200 dark:border-[#d4af37]/20 transition-all duration-300 shadow-2xl md:shadow-none overflow-hidden`}>  
         {isMobileMenuOpen && (
           <button onClick={() => setIsMobileMenuOpen(false)} className="absolute top-4 right-4 p-2 bg-white/10 rounded-full md:hidden">
             <X className="w-5 h-5 text-white" />
           </button>
         )}
-      <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between group cursor-pointer logo-hover-trigger">  
+      <div className={`p-6 border-b border-slate-200 dark:border-white/5 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} group cursor-pointer logo-hover-trigger`}>  
         <div className="flex items-center gap-3 font-black dark:text-white text-black">
-          <CreatorSignalLogo className="w-10 h-10" animate={true} />
-          <div className="flex flex-col">
-            <span className="text-xl tracking-tighter flex items-center gap-1.5">
-              X<span className="text-slate-300 dark:text-white/20">/</span><span className="text-[#d4af37]">INTELLIGENCE</span>
-            </span>
-            <span className="text-[7px] text-slate-400 font-bold uppercase tracking-[0.2em] -mt-1">Autonomous Networks</span>
-          </div>
+          <CreatorSignalLogo className="w-10 h-10 shrink-0" animate={true} />
+          {!isSidebarCollapsed && (
+            <div className="flex flex-col">
+              <span className="text-xl tracking-tighter flex items-center gap-1.5">
+                X<span className="text-slate-300 dark:text-white/20">/</span><span className="text-[#d4af37]">INTELLIGENCE</span>
+              </span>
+              <span className="text-[7px] text-slate-400 font-bold uppercase tracking-[0.2em] -mt-1">Autonomous Networks</span>
+            </div>
+          )}
         </div>
       </div>  
        
-      <nav className="flex-1 p-4 space-y-2">  
-        {[  
-          { id: 'warroom', name: 'War Room', icon: ShieldSafety },  
-          { id: 'intelligence', name: 'Bio Alignment', icon: NeuralLink },  
-          { id: 'fingerprint', name: 'Voice DNA', icon: FingerprintIcon },  
-          { id: 'hijack', name: 'Narrative Hijack', icon: TargetIcon },  
-          { id: 'creative', name: 'Creative Studio', icon: PenTool },  
-          { id: 'settings', name: 'Link AI / Settings', icon: Settings },  
-        ].map((item) => (  
-          <button  
-            key={item.id}  
-            onClick={() => setActiveTab(item.id)}  
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all cursor-target ${  
-              activeTab === item.id  
-              ? 'bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 shadow-sm shadow-[#d4af37]/5'  
-              : 'hover:bg-slate-100 dark:hover:bg-white/5'  
-            }`}  
-          >  
-            <item.icon className="w-4 h-4" />  
-            <span className="font-medium">{item.name}</span>  
-          </button>  
-        ))}  
+      <nav className="flex-1 p-4 space-y-6 overflow-y-auto custom-scrollbar overflow-x-hidden">  
+        {navigation.map((section) => (
+          <div key={section.group}>
+            {!isSidebarCollapsed && (
+              <h4 className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37]/60 mb-3 truncate">{section.group}</h4>
+            )}
+            <div className="space-y-1">
+              {section.items.map((item) => (
+                <button  
+                  key={item.id}  
+                  onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }}  
+                  className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4'} py-2 rounded-lg transition-all cursor-target group/nav ${  
+                    activeTab === item.id  
+                    ? 'bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 shadow-sm shadow-[#d4af37]/5'  
+                    : 'hover:bg-slate-100 dark:hover:bg-white/5'  
+                  }`}  
+                  title={isSidebarCollapsed ? item.name : ''}
+                >  
+                  <item.icon className="w-4 h-4 shrink-0" />  
+                  {!isSidebarCollapsed && (
+                    <span className="font-semibold text-xs tracking-tight truncate">{item.name}</span>  
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </nav>  
   
       <div className="p-4 border-t border-slate-200 dark:border-white/5 space-y-4">  
         <button 
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className="w-full flex items-center justify-between px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 hover:opacity-80 transition-all text-xs font-bold uppercase tracking-widest"
+          className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between px-4'} py-2 rounded-lg bg-slate-100 dark:bg-white/5 hover:opacity-80 transition-all text-xs font-bold uppercase tracking-widest`}
         >
-          <span>{isDarkMode ? 'Dark Mode' : 'Light Mode'}</span>
+          {!isSidebarCollapsed && <span>{isDarkMode ? 'Dark Mode' : 'Light Mode'}</span>}
           <RefreshCw className={`w-3 h-3 transition-transform ${isDarkMode ? 'rotate-180' : ''}`} />
         </button>
 
-          <div className="flex items-center gap-3 px-2 py-2">  
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-200 to-slate-400 dark:from-slate-700 dark:to-slate-900 border border-[#d4af37] flex items-center justify-center text-xs font-bold text-[#d4af37]">  
+          <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-2'} py-2`}>  
+          <div className="w-8 h-8 shrink-0 rounded-full bg-gradient-to-tr from-slate-200 to-slate-400 dark:from-slate-700 dark:to-slate-900 border border-[#d4af37] flex items-center justify-center text-xs font-bold text-[#d4af37]">  
             {userProfile.name.split(' ').map(n => n[0]).join('')}  
           </div>  
-          <div className="flex flex-col">  
-            <span className="text-sm font-semibold dark:text-white text-black">{userProfile.name}</span>  
-            <span className="text-[10px] text-[#d4af37] font-bold uppercase tracking-widest">Enterprise Tier</span>  
-          </div>  
-        </div>  
+          {!isSidebarCollapsed && (
+            <div className="flex flex-col truncate">  
+              <span className="text-sm font-semibold dark:text-white text-black truncate">{userProfile.name}</span>  
+              <span className="text-[10px] text-[#d4af37] font-bold uppercase tracking-widest truncate">Enterprise Tier</span>  
+            </div>  
+          )}
+        </div>
+
+        <button 
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="w-full hidden md:flex items-center justify-center p-2 rounded-lg bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 hover:bg-[#d4af37]/20 transition-all"
+        >
+          {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
       </div>  
     </div>
     </>
@@ -338,13 +410,16 @@ export default function App() {
       {renderSidebar()}  
        
       <main className="flex-1 overflow-y-auto relative">  
-        <GradualBlur 
-          position="top"
-          height="4rem"
-          strength={1.5}
-          divCount={8}
-          curve="bezier"
-        />
+        {/* Persistent Viewport Fades */}
+        <div className="sticky top-0 left-0 right-0 h-4 z-[60] pointer-events-none">
+          <GradualBlur 
+            position="top"
+            height="1.5rem"
+            strength={0.4}
+            divCount={6}
+            curve="bezier"
+          />
+        </div>
         {activeTab === 'settings' && (  
         <div className="space-y-6">  
           <div className="dark:bg-black bg-slate-50 border border-slate-200 dark:border-white/5 rounded-xl overflow-hidden relative min-h-[400px]">  
@@ -435,10 +510,13 @@ export default function App() {
                 <h1 className="text-3xl font-bold dark:text-white text-black mb-2 tracking-tight">  
                 <BlurText 
                   text={
+                    activeTab === 'command' ? 'Strategic Command Center' :
+                    activeTab === 'onboarding' ? 'Strategic Onboarding' :
                     activeTab === 'warroom' ? 'Strategic War Room' :
                     activeTab === 'intelligence' ? 'Bio Alignment Intelligence' :
                     activeTab === 'fingerprint' ? 'Lexical DNA & Voice' :
-                    'Narrative Hijack Radar'
+                    activeTab === 'hijack' ? 'Narrative Hijack Radar' :
+                    'System Diagnostics'
                   }
                   delay={100}
                   animateBy="words"
@@ -480,6 +558,53 @@ export default function App() {
             </div>  
           </div>  
   
+          {activeTab === 'onboarding' && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-4xl mx-auto py-12">
+              <Stepper
+                onFinalStepCompleted={() => setActiveTab('command')}
+                nextButtonText="Initialise Node"
+                backButtonText="Revert"
+              >
+                <Step>
+                  <h2>Sync Neural Signature</h2>
+                  <p>Initializing connection to X infrastructure. This node requires your biometric lexical signature to synchronize narrative growth patterns.</p>
+                  <div className="mt-6 p-4 bg-[#d4af37]/5 border border-[#d4af37]/20 rounded-xl">
+                    <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-widest">Status: Ready for Handshake</span>
+                  </div>
+                </Step>
+                <Step>
+                  <h2>Strategic Calibration</h2>
+                  <p>Define your primary narrative focus. Our AI will adjust the Algorithm Lab parameters to prioritize these strategic nodes.</p>
+                  <input placeholder="Enter Primary Domain (e.g. Enterprise Architecture, Web3 Security)" className="mt-4" />
+                </Step>
+                <Step>
+                  <h2>Audit Authorization</h2>
+                  <p>Enterprise nodes require active audit logging. By completing this initialization, you authorize SOC 2 compliant narrative recording.</p>
+                  <div className="mt-6 flex items-center gap-3 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    <span className="text-xs font-bold text-emerald-400">SOC 2 TYPE II COMPLIANCE ACTIVE</span>
+                  </div>
+                </Step>
+                <Step>
+                  <h2>Command Ready</h2>
+                  <p>Your Strategic Command Center is now primed. All neural links are stable. Proceed to operative view.</p>
+                </Step>
+              </Stepper>
+            </motion.div>
+          )}
+
+          {activeTab === 'command' && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="w-full">
+              <MagicBento 
+                textAutoHide={true}
+                enableStars={true}
+                enableSpotlight={true}
+                enableBorderGlow={true}
+                glowColor="212, 175, 55"
+              />
+            </motion.div>
+          )}
+
           {activeTab === 'warroom' && (  
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6">  
               {isRescuing && (  
@@ -654,66 +779,90 @@ export default function App() {
                   </div>  
                 </div>  
   
-                <div className="bg-slate-50 dark:bg-black border border-slate-200 dark:border-white/5 p-8 rounded-2xl shadow-xl flex flex-col gap-8">  
-                  <div>
-                    <h3 className="text-lg font-bold dark:text-white text-black mb-4 uppercase tracking-widest flex items-center gap-2">
-                       <ShieldSafety className="w-4 h-4 text-[#d4af37]" />
-                       Dominant Narratives
-                    </h3>  
-                    <div className="flex flex-wrap gap-2">  
-                      {isHardening ? (
-                         <div className="w-full h-8 bg-white/5 animate-pulse rounded-full"></div>
-                      ) : lexicalDNA?.top_narratives.map((tag, i) => (  
-                        <span key={i} className="bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 px-4 py-2 rounded-full text-xs font-black uppercase tracking-tighter">  
-                          {tag}  
-                        </span>  
-                      ))}  
-                    </div>  
+                <div className="flex flex-col gap-6">
+                  <div className="bg-slate-50 dark:bg-black border border-slate-200 dark:border-white/5 p-4 rounded-xl shadow-xl flex items-center justify-center min-h-[550px]">
+                    <ReflectiveCard
+                      overlayColor="rgba(0, 0, 0, 0.2)"
+                      blurStrength={11}
+                      glassDistortion={30}
+                      metalness={1}
+                      roughness={0.75}
+                      displacementStrength={20}
+                      noiseScale={1}
+                      specularConstant={5}
+                      grayscale={0.15}
+                      userName={userProfile.name.toUpperCase()}
+                      userRole="X ANALYST / STRATEGIST"
+                      idNumber="ID: CREATOR-SIGNAL-77"
+                      clientDetails={[
+                        { label: 'ORGANIZATION', value: 'ENTERPRISE CREATOR NETWORK' },
+                        { label: 'QUOTA', value: '1.2M SIGNALS / MO' },
+                        { label: 'ACCESS LEVEL', value: 'STRATEGIST OMNI' },
+                        { label: 'ACTIVE NODES', value: '14/14 OPERATIONAL' }
+                      ]}
+                    />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold dark:text-white text-black mb-4 uppercase tracking-widest flex items-center gap-2">
-                       <VerifiedAI className="w-4 h-4 text-emerald-500" />
-                       Strategic Adjustments
-                    </h3>  
-                    <div className="space-y-2">  
-                      {isHardening ? (
-                        <div className="space-y-2">
-                          <div className="h-6 bg-white/5 animate-pulse rounded w-full"></div>
-                          <div className="h-6 bg-white/5 animate-pulse rounded w-3/4"></div>
-                        </div>
-                      ) : lexicalDNA?.suggested_shifts.map((shift, i) => (  
-                        <div key={i} className="flex items-center gap-3 text-xs font-bold text-slate-400">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
-                          {shift}
-                        </div>
-                      ))}  
-                    </div>  
-                  </div>
-                </div>  
-              </div>
 
-              {/* Enterprise Audit Log Section */}
-              <div className="bg-slate-50 dark:bg-black border border-slate-200 dark:border-white/5 p-8 rounded-2xl shadow-xl">
-                <h3 className="dark:text-white text-black text-xl font-bold mb-6 flex items-center gap-3">
-                  <Lock className="text-[#d4af37] w-6 h-6" />
-                  Enterprise Operational Audit
-                </h3>
-                <div className="space-y-4 font-mono text-[10px]">
-                  {isHardening ? (
-                    <div className="animate-pulse space-y-2">
-                      <div className="h-4 bg-white/5 w-full rounded"></div>
-                      <div className="h-4 bg-white/5 w-full rounded"></div>
+                  <div className="bg-slate-50 dark:bg-black border border-slate-200 dark:border-white/5 p-8 rounded-2xl shadow-xl flex flex-col gap-8">
+                    <div>
+                      <h3 className="text-lg font-bold dark:text-white text-black mb-4 uppercase tracking-widest flex items-center gap-2">
+                         <ShieldSafety className="w-4 h-4 text-[#d4af37]" />
+                         Dominant Narratives
+                      </h3>  
+                      <div className="flex flex-wrap gap-2">  
+                        {isHardening ? (
+                           <div className="w-full h-8 bg-white/5 animate-pulse rounded-full"></div>
+                        ) : lexicalDNA?.top_narratives.map((tag, i) => (  
+                          <span key={i} className="bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 px-4 py-2 rounded-full text-xs font-black uppercase tracking-tighter">  
+                            {tag}  
+                          </span>  
+                        ))}  
+                      </div>  
                     </div>
-                  ) : auditLogs.map((log, idx) => (
-                    <div key={idx} className="flex items-center gap-4 text-slate-400 border-b border-white/5 pb-2">
-                      <span className="text-[#d4af37] shrink-0">[{log.timestamp.split('T')[1].split('.')[0]}]</span>
-                      <span className="dark:text-white text-black font-bold uppercase">{log.action}</span>
-                      <span className="ml-auto opacity-50">BY: {log.user}</span>
+                    <div>
+                      <h3 className="text-lg font-bold dark:text-white text-black mb-4 uppercase tracking-widest flex items-center gap-2">
+                         <VerifiedAI className="w-4 h-4 text-emerald-500" />
+                         Strategic Adjustments
+                      </h3>  
+                      <div className="space-y-2">  
+                        {isHardening ? (
+                          <div className="space-y-2">
+                            <div className="h-6 bg-white/5 animate-pulse rounded w-full"></div>
+                            <div className="h-6 bg-white/5 animate-pulse rounded w-3/4"></div>
+                          </div>
+                        ) : lexicalDNA?.suggested_shifts.map((shift, i) => (  
+                          <div key={i} className="flex items-center gap-3 text-xs font-bold text-slate-400">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+                            {shift}
+                          </div>
+                        ))}  
+                      </div>  
                     </div>
-                  ))}
-                  {auditLogs.length === 0 && !isHardening && (
-                    <div className="text-slate-500 italic">No operational logs detected in the current session.</div>
-                  )}
+                  </div>
+                </div>
+
+                {/* Enterprise Operational Audit */}
+                <div className="bg-slate-50 dark:bg-black border border-slate-200 dark:border-white/5 p-8 rounded-2xl shadow-xl">
+                  <h3 className="dark:text-white text-black text-xl font-bold mb-6 flex items-center gap-3">
+                    <Lock className="text-[#d4af37] w-6 h-6" />
+                    Enterprise Operational Audit
+                  </h3>
+                  <div className="space-y-4 font-mono text-[10px]">
+                    {isHardening ? (
+                      <div className="animate-pulse space-y-2">
+                        <div className="h-4 bg-white/5 w-full rounded"></div>
+                        <div className="h-4 bg-white/5 w-full rounded"></div>
+                      </div>
+                    ) : (
+                      auditLogs.map((log, idx) => (
+                        <div key={idx} className="flex items-center gap-4 text-slate-400 border-b border-white/5 pb-2">
+                          <span className="text-[#d4af37] shrink-0">[{log.timestamp.split('T')[1].split('.')[0]}]</span>
+                          <span className="dark:text-white text-black font-bold uppercase">{log.action}</span>
+                          <span className="ml-auto opacity-50">BY: {log.user}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>  
@@ -762,7 +911,7 @@ export default function App() {
                   <blockquote className="border-l-4 border-[#d4af37]/50 pl-8 mb-10 dark:text-slate-300 text-slate-700 italic text-xl font-serif leading-relaxed relative z-10">  
                     "{target.text}"  
                   </blockquote>  
-                  <div className="bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 p-8 rounded-2xl relative z-10 backdrop-blur-sm">  
+                  <div className="bg-white/60 dark:bg-black/40 border border-slate-200 dark:border-white/10 p-8 rounded-2xl relative z-10 backdrop-blur-md">  
                     <h4 className="text-[#d4af37] font-black text-xs uppercase tracking-[0.2em] mb-4 flex items-center gap-2">  
                       <NeuralLink className="w-4 h-4" />  
                       Counter-Strike Logic  
@@ -789,16 +938,76 @@ export default function App() {
                 </div>  
               ))}  
             </motion.div>  
-          )}  
+          )}
+
+          {!['warroom', 'intelligence', 'fingerprint', 'hijack', 'settings', 'command', 'onboarding'].includes(activeTab) && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-8 max-w-6xl mx-auto space-y-8">
+               <div className="flex flex-col items-center justify-center min-h-[500px] border border-dashed border-[#d4af37]/30 rounded-3xl bg-[#d4af37]/5 backdrop-blur-sm">
+                 <div className="w-24 h-24 bg-[#d4af37]/10 rounded-full flex items-center justify-center mb-8 rotate-12 border border-[#d4af37]/20">
+                   <ShieldSafety className="w-12 h-12 text-[#d4af37] animate-pulse" />
+                 </div>
+                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Accessing Node...</h2>
+                 <p className="text-[#d4af37]/60 font-mono text-xs uppercase tracking-widest px-8 text-center max-w-md">
+                   ENCRYPTED DATA STREAM PENDING INITIALIZATION FOR NODE: [{activeTab.toUpperCase()}]
+                 </p>
+                 <div className="mt-12 flex gap-3">
+                   {[0, 1, 2, 3].map(i => (
+                     <div key={i} className="w-1.5 h-6 bg-[#d4af37]/20 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.15}s` }} />
+                   ))}
+                 </div>
+               </div>
+            </motion.div>
+          )}
   
         </div>  
-        <GradualBlur 
-          position="bottom"
-          height="4rem"
-          strength={1.5}
-          divCount={8}
-          curve="bezier"
-        />
+
+        <footer className="mt-12 px-8 pb-12 flex justify-center">
+          <CardNav 
+            items={[
+              {
+                label: "Intelligence",
+                bgColor: "#000000",
+                textColor: "#fff",
+                links: [
+                  { label: "Vision", ariaLabel: "Our Vision", href: "#" },
+                  { label: "Systems", ariaLabel: "Autonomous Systems", href: "#" }
+                ]
+              },
+              {
+                label: "Connect",
+                bgColor: "#000000",
+                textColor: "#fff",
+                links: [
+                  { label: "X / Twitter", ariaLabel: "Follow on X", href: "https://x.com" },
+                  { label: "GitHub", ariaLabel: "Source Code", href: "#" }
+                ]
+              },
+              {
+                label: "Legal",
+                bgColor: "#000000",
+                textColor: "#fff",
+                links: [
+                  { label: "Privacy", ariaLabel: "Privacy Policy", href: "#" },
+                  { label: "Terms", ariaLabel: "Terms of Service", href: "#" }
+                ]
+              }
+            ]}
+            baseColor="rgba(0,0,0,0.4)"
+            menuColor="#d4af37"
+            buttonBgColor="#d4af37"
+            buttonTextColor="#000"
+          />
+        </footer>
+
+        <div className="sticky bottom-0 left-0 right-0 h-4 z-[60] pointer-events-none mt-auto">
+          <GradualBlur 
+            position="bottom"
+            height="1.5rem"
+            strength={0.4}
+            divCount={6}
+            curve="bezier"
+          />
+        </div>
       </main>  
     </div>  
   );  

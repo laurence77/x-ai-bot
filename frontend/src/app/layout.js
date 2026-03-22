@@ -12,8 +12,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceMono.variable}`}>
-      <body className="antialiased font-sans">{children}</body>
+    <html lang="en" className={`${inter.variable} ${spaceMono.variable}`} suppressHydrationWarning>
+      <body className="antialiased font-sans" suppressHydrationWarning>{children}</body>
     </html>
   );
 }
