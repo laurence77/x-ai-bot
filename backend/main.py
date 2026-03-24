@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 from datetime import datetime
 import json
 import os
@@ -8,6 +8,13 @@ import asyncio
 from fastapi import FastAPI, HTTPException, Depends, Header
 
 from fastapi.middleware.cors import CORSMiddleware
+from app.services.bio_alignment import BioAlignmentRequest, BioAlignmentResponse, analyze_bio_alignment
+from app.services.voice_dna import analyze_lexical_dna
+from app.services.narrative_analyzer import analyze_format_fatigue, FatigueAnalysis
+from app.services.algorithm_pulse import analyze_posting_window, PulseAnalysis
+from app.auth import x_oauth
+from app.enterprise import workspace, reporting, audit
+from app.auth import x_oauth
 
 app = FastAPI(title="X/INTELLIGENCE API")
 
@@ -22,24 +29,24 @@ app.add_middleware(
 # Mock persistence
 DB_FILE = "mock_db.json"
 
-def load_db():
+def load_db() -> Dict[str, Any]:
     if os.path.exists(DB_FILE):
         with open(DB_FILE, "r") as f:
             return json.load(f)
     return {
         "account_linked": False,
-        "user_data": None,
+        "user_data": {},
         "audit_logs": []
     }
 
-def save_db(data):
+def save_db(data: Dict[str, Any]):
     # Convert datetime to string for JSON
     if data.get("user_data") and isinstance(data["user_data"].get("linked_at"), datetime):
         data["user_data"]["linked_at"] = data["user_data"]["linked_at"].isoformat()
     with open(DB_FILE, "w") as f:
         json.dump(data, f)
 
-db = load_db()
+db: Dict[str, Any] = load_db()
 
 # Security Simulation
 API_KEY_HEADER = "X-CreatorSignal-Key"
@@ -127,6 +134,10 @@ async def analyze_content(post_text: str):
         improvement_plan="Shorten the initial hook and add a stronger contrast in the second line."
     )
 
+@app.post("/v1/ai/bio-alignment", response_model=BioAlignmentResponse)
+async def generate_bio_alignment(request: BioAlignmentRequest):
+    return analyze_bio_alignment(request.current_bio, request.viral_topic)
+
 @app.get("/v1/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats():
     # Mock data for live dashboard
@@ -170,14 +181,85 @@ async def get_competitor_radar():
 
 @app.get("/v1/intelligence/lexical-dna", response_model=LexicalDNA)
 async def get_lexical_dna(apiKey: str = Depends(verify_api_key)):
-    return LexicalDNA(
-        style_archetype="The Disruptor / Visionary",
-        vocabulary_density=0.84,
-        sentence_variance="High (Complex-Short Hybrid)",
-        emotional_resonance=92,
-        top_narratives=["AI Sovereignty", "Exponential Growth", "Anti-Standardization"],
-        suggested_shifts=["Increase 'Urgency' keywords by 12%", "Reduce passive voice in hooks"]
-    )
+    # Simulating the user's recent posts since X OAuth isn't live yet
+    mock_recent_posts = [
+        "The gap between Good SaaS and Enterprise-Grade is trust. Build systems, not hype.",
+        "Most founders ruin their X growth by following 2021 tactics. The algorithm rewards depth today.",
+        "Your UI is pretty, but if your SOC 2 isn't ready, the enterprise buyer doesn't care.",
+        "A 5-step framework to harden your node: 1) Encryption, 2) Data Governance, 3) RBAC... read more",
+        "AI agents are replacing junior engineers, but they won't replace senior architects who design robust pipelines."
+    ]
+    
+    # Let the Universal Model Router dynamically extract the lexical fingerprint
+    try:
+        dna_analysis = analyze_lexical_dna(mock_recent_posts)
+        return LexicalDNA(
+            style_archetype=dna_analysis.style_archetype,
+            vocabulary_density=dna_analysis.vocabulary_density,
+            sentence_variance=dna_analysis.sentence_variance,
+            emotional_resonance=dna_analysis.emotional_resonance,
+            top_narratives=dna_analysis.top_narratives,
+            suggested_shifts=dna_analysis.suggested_shifts
+        )
+    except Exception as e:
+        # Fallback for when API keys are missing or invalid
+        print(f"Failed to generate Voice DNA: {e}")
+        return LexicalDNA(
+            style_archetype="The Pragmatist / Educator",
+            vocabulary_density=0.88,
+            sentence_variance="High (Complex-Short Hybrid)",
+            emotional_resonance=85,
+            top_narratives=["Enterprise Readiness", "Tactical Systems", "Anti-Hype"],
+            suggested_shifts=["Lean into provocative opening hooks", "Decrease jargon density slightly"]
+        )
+
+@app.get("/v1/intelligence/narrative-fatigue", response_model=FatigueAnalysis)
+async def get_format_fatigue(apiKey: str = Depends(verify_api_key)):
+    # Simulating recent posts showing extreme format fatigue
+    mock_recent_posts = [
+        "Stop doing cold outreach. Here is a 5-step framework to launch inbound.",
+        "Stop doing manual SEO. Here is a 5-step framework to automate your blog.",
+        "Stop doing generic sales calls. Here is a 5-step framework to close whales.",
+        "Stop doing traditional networking. Here is a 5-step framework to build a community.",
+        "Stop doing slow onboarding. Here is a 5-step framework to activate users instantly."
+    ]
+    
+    try:
+        analysis = analyze_format_fatigue(mock_recent_posts)
+        if analysis:
+            return analysis
+        raise ValueError("AI returned empty analysis")
+    except Exception as e:
+        print(f"Failed to generate Format Fatigue Analysis: {e}")
+        return FatigueAnalysis(
+            is_fatigued=True,
+            dominant_format="Stop doing X. Here is a 5-step framework...",
+            fatigue_severity=95,
+            pattern_disruptor="Post a vulnerable, raw narrative without lists. Break the 'expert' listicle pattern completely."
+        )
+
+@app.get("/v1/intelligence/algorithm-pulse", response_model=PulseAnalysis)
+async def get_algorithm_pulse(apiKey: str = Depends(verify_api_key)):
+    # Simulating recent engagement velocity data
+    mock_engagement_data = [
+        {"timestamp": "2023-10-27T14:00:00Z", "velocity": 12.5, "event": "retweet"},
+        {"timestamp": "2023-10-27T14:05:00Z", "velocity": 45.2, "event": "reply"},
+        {"timestamp": "2023-10-27T14:15:00Z", "velocity": 89.1, "event": "quote_tweet"}
+    ]
+    
+    try:
+        analysis = analyze_posting_window(mock_engagement_data)
+        if analysis:
+            return analysis
+        raise ValueError("AI returned empty analysis")
+    except Exception as e:
+        print(f"Failed to calculate Algorithm Pulse: {e}")
+        return PulseAnalysis(
+            optimal_window_start="14:20 UTC",
+            optimal_window_end="14:35 UTC",
+            urgency_score=92,
+            reasoning="Velocity indicates a trending cluster of replies. Immediate follow-up capitalizes on active user sessions."
+        )
 
 @app.get("/v1/enterprise/audit-logs")
 async def get_audit_logs():

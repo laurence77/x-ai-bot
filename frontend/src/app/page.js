@@ -82,18 +82,47 @@ export default function App() {
     bio: "Helping founders scale." // Default bio
   });
 
+  const [bioAlignmentResult, setBioAlignmentResult] = useState({
+    profileVisits24h: 3412,
+    followerConversionRate: 0.042,
+    mismatchReason: "Analyzing strategic mismatch...",
+    suggestedBio: "Run alignment to rewrite bio...",
+    isAligned: false
+  });
+
   const [isApplyingBio, setIsApplyingBio] = useState(false);
   const [generatingDraftFor, setGeneratingDraftFor] = useState(null);
 
   const handleApplyBio = async () => {
     setIsApplyingBio(true);
-    // Simulate AI processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setUserProfile(prev => ({
-      ...prev,
-      bio: "Helping Enterprise Founders harden their SaaS architecture. Systems > Hype."
-    }));
-    setIsApplyingBio(false);
+    try {
+      const response = await fetch('http://localhost:8000/v1/ai/bio-alignment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_bio: userProfile.bio,
+          viral_topic: lexicalDNA?.top_narratives?.[0] || "Enterprise Architecture"
+        })
+      });
+      const data = await response.json();
+      
+      setBioAlignmentResult(prev => ({
+        ...prev,
+        mismatchReason: data.mismatch_reason || "Connection fault.",
+        suggestedBio: data.transformative_bio || "Mock suggested bio.",
+        isAligned: data.is_aligned || false
+      }));
+      
+    } catch (err) {
+      console.warn("Bio Alignment API failed. Using fallback.", err);
+      setBioAlignmentResult(prev => ({
+        ...prev,
+        mismatchReason: "Failed to connect to AI Pipeline. Check API Key.",
+        suggestedBio: "Helping Enterprise Founders harden their SaaS architecture."
+      }));
+    } finally {
+      setIsApplyingBio(false);
+    }
   };
 
   const handleGenerateDraft = async (targetId) => {
@@ -703,11 +732,11 @@ export default function App() {
                   <div className="space-y-4">  
                     <div className="flex justify-between items-end border-b border-slate-200 dark:border-white/5 pb-4">  
                       <span className="dark:text-slate-400 text-slate-600 text-sm font-medium uppercase tracking-wider">Profile Visits (24h)</span>  
-                      <span className="text-2xl font-black dark:text-white text-black font-mono">{MOCK_BIO_ALIGNMENT.profileVisits24h}</span>  
+                      <span className="text-2xl font-black dark:text-white text-black font-mono">{bioAlignmentResult.profileVisits24h}</span>  
                     </div>  
                     <div className="flex justify-between items-end border-b border-slate-200 dark:border-slate-800 pb-4">  
                       <span className="dark:text-slate-400 text-slate-600 text-sm font-medium uppercase tracking-wider">Follower Conversion Rate</span>  
-                      <span className="text-2xl font-black text-rose-500 font-mono">{ (MOCK_BIO_ALIGNMENT.followerConversionRate * 100).toFixed(1) }%</span>  
+                      <span className="text-2xl font-black text-rose-500 font-mono">{ (bioAlignmentResult.followerConversionRate * 100).toFixed(1) }%</span>  
                     </div>  
                   </div>  
                    
@@ -717,7 +746,7 @@ export default function App() {
                       <span className="font-black text-xs uppercase tracking-widest">Alignment Mismatch</span>  
                     </div>  
                     <p className="text-sm dark:text-slate-300 text-slate-700 leading-relaxed font-medium">  
-                      {MOCK_BIO_ALIGNMENT.mismatchReason}  
+                      {bioAlignmentResult.mismatchReason}  
                     </p>  
                   </div>  
                 </div>  
@@ -730,7 +759,7 @@ export default function App() {
                     Suggested Transformation
                   </h3>  
                   <div className="bg-white dark:bg-black p-8 rounded-xl border border-slate-200 dark:border-white/5 mb-8 font-serif text-lg text-[#d4af37] italic shadow-inner">  
-                    "{MOCK_BIO_ALIGNMENT.suggestedBio}"  
+                    "{bioAlignmentResult.suggestedBio}"  
                   </div>  
                 </div>
                 <button 
