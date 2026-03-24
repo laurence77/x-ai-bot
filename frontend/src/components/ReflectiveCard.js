@@ -31,6 +31,10 @@ const ReflectiveCard = ({
 
     const startWebcam = async () => {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          console.warn('Webcam access is restricted (requires HTTPS or localhost) and cannot be loaded on this device.');
+          return;
+        }
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             width: { ideal: 640 },
